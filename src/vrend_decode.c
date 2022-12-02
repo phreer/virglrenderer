@@ -1460,6 +1460,7 @@ static int vrend_decode_pipe_resource_create(struct vrend_context *ctx, const ui
 {
    struct vrend_renderer_resource_create_args args = { 0 };
    uint32_t blob_id;
+   uint32_t res_handle;
 
    if (length != VIRGL_PIPE_RES_CREATE_SIZE)
       return EINVAL;
@@ -1475,8 +1476,9 @@ static int vrend_decode_pipe_resource_create(struct vrend_context *ctx, const ui
    args.nr_samples = get_buf_entry(buf, VIRGL_PIPE_RES_CREATE_NR_SAMPLES);
    args.flags = get_buf_entry(buf, VIRGL_PIPE_RES_CREATE_FLAGS);
    blob_id = get_buf_entry(buf, VIRGL_PIPE_RES_CREATE_BLOB_ID);
+   res_handle = get_buf_entry(buf, VIRGL_PIPE_RES_CREATE_RES_HANDLE);
 
-   return vrend_renderer_pipe_resource_create(ctx, blob_id, &args);
+   return vrend_renderer_pipe_resource_create(ctx, blob_id, res_handle, &args);
 }
 
 static int vrend_decode_pipe_resource_set_type(struct vrend_context *ctx, const uint32_t *buf, uint32_t length)

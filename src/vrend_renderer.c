@@ -12213,12 +12213,30 @@ int vrend_renderer_export_query(struct pipe_resource *pres,
 }
 
 int vrend_renderer_pipe_resource_create(struct vrend_context *ctx, uint32_t blob_id,
+                                        uint32_t res_handle,
                                         const struct vrend_renderer_resource_create_args *args)
 {
-   struct vrend_resource *res;
+   struct vrend_resource *res = NULL;
+   struct virgl_resource *gres = NULL;
+
+   if (res_handle) {
+      /* user resource id must be unique */
+      gres = virgl_resource_lookup(res_handle);
+      if (!gres) {
+         printf("cannot find resource, res_handle = %u\n", res_handle);
+         return -EINVAL;
+      }
+   }
+
    res = (struct vrend_resource *)vrend_renderer_resource_create(args, NULL);
    if (!res)
       return EINVAL;
+
+   if (res_handle) {
+      gres->pipe_resource = &res->base;
+      gres->map_info = res->map_info;
+      return 0;
+   }
 
    res->blob_id = blob_id;
    list_addtail(&res->head, &ctx->vrend_resources);

@@ -930,6 +930,7 @@ int virgl_renderer_resource_create_blob(const struct virgl_renderer_resource_cre
    struct virgl_context_blob blob;
    bool has_host_storage;
    bool has_guest_storage;
+   bool is_prime_buffer = false;
    int ret;
 
    switch (args->blob_mem) {
@@ -944,6 +945,11 @@ int virgl_renderer_resource_create_blob(const struct virgl_renderer_resource_cre
    case VIRGL_RENDERER_BLOB_MEM_HOST3D_GUEST:
       has_host_storage = true;
       has_guest_storage = true;
+      break;
+   case VIRGL_RENDERER_BLOB_MEM_PRIME:
+      has_host_storage = true;
+      has_guest_storage = true;
+      is_prime_buffer = true;
       break;
    default:
       return -EINVAL;
@@ -968,14 +974,22 @@ int virgl_renderer_resource_create_blob(const struct virgl_renderer_resource_cre
          return -EINVAL;
    }
 
-   if (!has_host_storage) {
+   // If the resource is created by PRIME importing from other device, we delay
+   // the creation of the underlying pipe_resource, because we lack of
+   // neccessary information right now.
+   if (!has_host_storage || is_prime_buffer) {
       res = virgl_resource_create_from_iov(args->res_handle,
                                            args->iovecs,
                                            args->num_iovs);
       if (!res)
          return -ENOMEM;
 
-      res->map_info = VIRGL_RENDERER_MAP_CACHE_CACHED;
+      if (!has_host_storage)
+         res->map_info = VIRGL_RENDERER_MAP_CACHE_CACHED;
+
+      if (is_prime_buffer)
+         res->map_size = args->size;
+
       return 0;
    }
 
