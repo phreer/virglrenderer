@@ -21,6 +21,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
+#include "u_debug_describe.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -8512,6 +8513,11 @@ static int vrend_renderer_transfer_write_iov(struct vrend_context *ctx,
          layer_stride = util_format_get_2d_size(res->base.format, stride,
                                                 u_minify(res->base.height0, info->level));
 
+      unsigned int num_el = util_format_get_nblocksx(res->base.format, u_minify(res->base.width0, info->level));
+      printf("%s(): stride: %u, offset: %lu, num_ele = %u, el = %u, format = %d\n",
+            __func__, info->stride, info->offset, num_el, elsize, res->base.format);
+      printf("\tformat = %s\n", util_format_name(res->base.format));
+
       compressed = util_format_is_compressed(res->base.format);
       if (num_iovs > 1 || compressed) {
          need_temp = true;
@@ -9135,6 +9141,7 @@ int vrend_renderer_transfer_iov(struct vrend_context *ctx,
 
    res = vrend_renderer_ctx_res_lookup(ctx, dst_handle);
    if (!res) {
+      printf("%s(): return point 1\n", __func__);
       vrend_report_context_error(ctx, VIRGL_ERROR_CTX_ILLEGAL_RESOURCE, dst_handle);
       return EINVAL;
    }
@@ -9143,11 +9150,14 @@ int vrend_renderer_transfer_iov(struct vrend_context *ctx,
       if (has_bit(res->storage_bits, VREND_STORAGE_EGL_IMAGE))
          return 0;
       else {
+         printf("%s(): return point 2\n", __func__);
          vrend_report_context_error(ctx, VIRGL_ERROR_CTX_ILLEGAL_RESOURCE, dst_handle);
          return EINVAL;
       }
    }
 
+   printf("%s(): res_id = %u, transfer_mode = %s\n",
+         __func__, dst_handle, transfer_mode == 1 ? "TO_HOST" : "FROM_HOST");
    return vrend_renderer_transfer_internal(ctx, res, info,
                                            transfer_mode);
 }
@@ -12235,6 +12245,13 @@ int vrend_renderer_pipe_resource_create(struct vrend_context *ctx, uint32_t blob
    if (res_handle) {
       gres->pipe_resource = &res->base;
       gres->map_info = res->map_info;
+      res->iov = gres->iov;
+      res->num_iovs = gres->iov_count;
+      printf("%s(): res_handle = %u, format = %s\n", __func__, res_handle, util_format_name(res->base.format));
+      printf("%s(): insert resouce to contex, res_id = %u, iov = %p, iov_num = %u\n", __func__, gres->res_id, (void *) gres->iov, gres->iov_count);
+      vrend_ctx_resource_insert(ctx->res_hash,
+                                gres->res_id,
+                                res);
       return 0;
    }
 
