@@ -540,6 +540,7 @@ void vrend_sync_make_current(virgl_gl_context);
 
 int
 vrend_renderer_pipe_resource_create(struct vrend_context *ctx, uint32_t blob_id,
+                                    uint32_t res_handle,
                                     const struct vrend_renderer_resource_create_args *args);
 
 struct pipe_resource *vrend_get_blob_pipe(struct vrend_context *ctx, uint64_t blob_id);
