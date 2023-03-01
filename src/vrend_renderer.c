@@ -12427,7 +12427,7 @@ int vrend_renderer_pipe_resource_create(struct vrend_context *ctx, uint32_t blob
    struct vrend_resource *res;
    res = (struct vrend_resource *)vrend_renderer_resource_create(args, NULL);
    if (!res)
-      return EINVAL;
+      return -EINVAL;
 
    res->blob_id = blob_id;
    list_addtail(&res->head, &ctx->vrend_resources);
@@ -12542,6 +12542,7 @@ vrend_renderer_pipe_resource_set_type(struct vrend_context *ctx,
 
       ret = vrend_resource_alloc_texture(gr, virgl_format, gr->egl_image);
       if (ret) {
+         vrend_printf("%s(): failed to allocate texture from egl_image\n", __func__);
          virgl_egl_image_destroy(egl, gr->egl_image);
          FREE(gr);
          return ret;

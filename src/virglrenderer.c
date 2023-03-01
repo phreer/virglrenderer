@@ -941,6 +941,9 @@ int virgl_renderer_resource_create_blob(const struct virgl_renderer_resource_cre
       has_host_storage = true;
       has_guest_storage = true;
       break;
+   case VIRGL_RENDERER_BLOB_MEM_PRIME:
+      // Create virgl_resource in import_blob.
+      return 0;
    default:
       return -EINVAL;
    }
@@ -972,6 +975,7 @@ int virgl_renderer_resource_create_blob(const struct virgl_renderer_resource_cre
          return -ENOMEM;
 
       res->map_info = VIRGL_RENDERER_MAP_CACHE_CACHED;
+
       return 0;
    }
 
@@ -979,6 +983,7 @@ int virgl_renderer_resource_create_blob(const struct virgl_renderer_resource_cre
    if (!ctx)
       return -EINVAL;
 
+   // Obtian resource created by pipe_resource_create or other methods.
    ret = ctx->get_blob(ctx, args->res_handle, args->blob_id, args->size, args->blob_flags, &blob);
    if (ret)
       return ret;
@@ -1147,12 +1152,15 @@ virgl_renderer_resource_import_blob(const struct virgl_renderer_resource_import_
       return -EINVAL;
 
    /* user resource id must be unique */
-   if (virgl_resource_lookup(args->res_handle))
+   if (virgl_resource_lookup(args->res_handle)) {
+      vrend_printf("%s(): failed to find resource, resource_id = %u\n", __func__, args->res_handle);
       return -EINVAL;
+   }
 
    switch (args->blob_mem) {
    case VIRGL_RENDERER_BLOB_MEM_HOST3D:
    case VIRGL_RENDERER_BLOB_MEM_GUEST_VRAM:
+   case VIRGL_RENDERER_BLOB_MEM_PRIME:
       break;
    default:
       return -EINVAL;
