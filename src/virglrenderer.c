@@ -1105,6 +1105,9 @@ int virgl_renderer_resource_create_blob(const struct virgl_renderer_resource_cre
       has_host_storage = true;
       has_guest_storage = true;
       break;
+   case VIRGL_RENDERER_BLOB_MEM_PRIME:
+      // Create virgl_resource in import_blob.
+      return 0;
    default:
       return -EINVAL;
    }
@@ -1317,6 +1320,7 @@ virgl_renderer_resource_import_blob(const struct virgl_renderer_resource_import_
    switch (args->blob_mem) {
    case VIRGL_RENDERER_BLOB_MEM_HOST3D:
    case VIRGL_RENDERER_BLOB_MEM_GUEST_VRAM:
+   case VIRGL_RENDERER_BLOB_MEM_PRIME:
       break;
    default:
       return -EINVAL;

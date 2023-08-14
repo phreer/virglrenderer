@@ -12752,7 +12752,7 @@ int vrend_renderer_pipe_resource_create(struct vrend_context *ctx, uint32_t blob
    struct vrend_resource *res;
    res = (struct vrend_resource *)vrend_renderer_resource_create(args, NULL);
    if (!res)
-      return EINVAL;
+      return -EINVAL;
 
    res->blob_id = blob_id;
    list_addtail(&res->head, &ctx->vrend_resources);
